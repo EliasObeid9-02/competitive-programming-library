@@ -110,6 +110,21 @@ public:
         return (ancestor_order == 0 ? node : (int)one_indexing_mode);
     }
 
+    int getKthNodeOnPath(int first_node, int second_node, int order)
+    {
+        int common_ancestor = getLCA(first_node, second_node);
+        int first_half = depth[first_node] - depth[common_ancestor];
+        int second_half = depth[second_node] - depth[common_ancestor];
+        if (order < first_half)
+        {
+            return kthAncestor(first_node, order);
+        }
+        else
+        {
+            return kthAncestor(second_node, first_half + second_half - order);
+        }
+    }
+
     int getDistance(int first_node, int second_node)
     {
         return distances[first_node] + distances[second_node] -
