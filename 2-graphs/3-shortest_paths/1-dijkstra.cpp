@@ -9,19 +9,20 @@ struct Path
     long long weight;
     Path(int _node = 0, long long _weight = 0) : node{_node}, weight{_weight} {}
 
-    friend bool operator<(const Path &A, const Path &B)
+    friend bool operator>(const Path &first_path, const Path &second_path)
     {
-        return A.weight < B.weight;
+        return first_path.weight > second_path.weight;
     }
 };
 
+template <bool one_indexing_mode = false>
 vector<long long> getDijkstra(int source, int graph_size, const vector<vector<pair<int, int>>> &graph)
 {
-    vector<long long> distances(graph_size + 1, INF);
+    vector<long long> distances(graph_size + (int)one_indexing_mode, INF);
     distances[source] = 0;
 
-    priority_queue<Path, vector<Path>> paths;
-    for (int node = 1; node <= graph_size; ++node)
+    priority_queue<Path, vector<Path>, greater<Path>> paths;
+    for (int node = (int)one_indexing_mode; node < graph_size + (int)one_indexing_mode; ++node)
     {
         paths.emplace(node, distances[node]);
     }
@@ -57,19 +58,17 @@ int main()
 {
     int graph_size, edges_count, queries, source;
     cin >> graph_size >> edges_count >> queries >> source;
-    --source;
 
-    vector<vector<pair<int, int>>> graph(graph_size);
+    vector<vector<pair<int, int>>> graph(graph_size + 1);
     for (int i = 0; i < edges_count; ++i)
     {
         int first_node, second_node, weight;
         cin >> first_node >> second_node >> weight;
-        --first_node, --second_node;
         graph[first_node].emplace_back(second_node, weight);
         graph[second_node].emplace_back(first_node, weight);
     }
 
-    vector<long long> distances = getDijkstra(source, graph_size, graph);
+    vector<long long> distances = getDijkstra<true>(source, graph_size, graph);
     for (int i = 0; i < queries; ++i)
     {
         int node;
