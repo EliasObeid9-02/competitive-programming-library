@@ -66,7 +66,7 @@ struct modular_int
 
 	modular_int &operator--()
 	{
-		value = (value == 0 ? MOD - 1 : value - 1);
+		value = (value == 0 ? modulo - 1 : value - 1);
 		return *this;
 	}
 
@@ -85,7 +85,7 @@ struct modular_int
 
 	modular_int operator-() const
 	{
-		return (value == 0 ? 0 : MOD - value);
+		return (value == 0 ? 0 : modulo - value);
 	}
 
 	friend bool operator==(const modular_int &a, const modular_int &b) { return a.value == b.value; }
@@ -130,8 +130,8 @@ struct modular_int
 			modular_int product = 1;
 			while (v >= SAVE_INV)
 			{
-				product *= MOD - MOD / v;
-				v = MOD % v;
+				product *= modulo - modulo / v;
+				v = modulo % v;
 			}
 			return product * save_inv[v];
 		}
