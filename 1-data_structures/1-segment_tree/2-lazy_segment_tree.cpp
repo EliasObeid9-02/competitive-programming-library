@@ -1,9 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <bool one_indexing_mode = false>
 class SegmentTree
 {
-private:
+public:
     // Todo : modify based on problem requirements
     struct Change
     {
@@ -42,33 +43,28 @@ private:
     // Todo : modify based on problem requirements
     struct Segment
     {
-        long long sum, minimum, maximum;
-        Segment(long long _sum = 0,
-                long long _minimum = numeric_limits<long long>::max(),
-                long long _maximum = numeric_limits<long long>::lowest())
-            : sum{_sum}, minimum{_minimum}, maximum{_maximum} {}
+        long long sum;
+        Segment(long long _sum = 0)
+            : sum{_sum} {}
 
         void pushChange(const Change &change, int low, int high)
         {
             if (change.hasSet())
             {
                 sum = change.to_set * (high - low + 1LL);
-                minimum = maximum = change.to_set;
             }
             sum += change.to_add * (high - low + 1LL);
-            minimum += change.to_add;
-            maximum += change.to_add;
         }
 
         friend Segment operator+(const Segment &left_side, const Segment &right_side)
         {
-            return Segment(left_side.sum + right_side.sum,
-                           min(left_side.minimum, right_side.minimum),
-                           max(left_side.maximum, right_side.maximum));
+            return Segment(left_side.sum + right_side.sum);
         }
     };
 
+private:
     int tree_size;
+    int tree_range_start, tree_range_end;
     vector<Segment> segment_tree;
     vector<Change> lazy_tree;
 
@@ -79,15 +75,34 @@ private:
         {
             tree_size *= 2;
         }
+
+        if (one_indexing_mode)
+        {
+            tree_range_start = 1;
+            tree_range_end = tree_size;
+        }
+        else
+        {
+            tree_range_start = 0;
+            tree_range_end = tree_size - 1;
+        }
+
         segment_tree.resize(tree_size * 2, Segment{});
         lazy_tree.resize(tree_size * 2, Change{});
     }
 
-    void buildTree(int array_size, const vector<int> &initial_array)
+    template <typename value_type = int>
+    void buildTree(int array_size, const vector<value_type> &initial_array = vector<value_type>{})
     {
+        if (initial_array.empty())
+        {
+            return;
+        }
+
         for (int i = 0; i < array_size; ++i)
         {
-            segment_tree[tree_size + i] = Segment(initial_array[i], initial_array[i], initial_array[i]);
+            int index = i + (int)one_indexing_mode;
+            segment_tree[tree_size + i] = Segment(initial_array[index]);
         }
 
         for (int node = tree_size - 1; node > 0; --node)
