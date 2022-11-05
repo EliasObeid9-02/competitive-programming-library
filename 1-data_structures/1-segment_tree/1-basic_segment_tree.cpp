@@ -1,22 +1,25 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <bool one_indexing_mode = false>
 class SegmentTree
 {
-private:
+public:
     // Todo : modify based on problem requirements
     struct Segment
     {
-        long long sum;
-        Segment(long long _sum = 0) : sum{_sum} {}
+        int maximum;
+        Segment(int _maximum = numeric_limits<int>::lowest()) : maximum{_maximum} {}
 
         friend Segment operator+(const Segment &left_side, const Segment &right_side)
         {
-            return Segment(left_side.sum + right_side.sum);
+            return Segment(max(left_side.maximum, right_side.maximum));
         }
     };
 
+private:
     int tree_size;
+    int tree_range_start, tree_range_end;
     vector<Segment> segment_tree;
 
     void initialize(int array_size)
@@ -26,14 +29,33 @@ private:
         {
             tree_size *= 2;
         }
+
+        if (one_indexing_mode)
+        {
+            tree_range_start = 1;
+            tree_range_end = tree_size;
+        }
+        else
+        {
+            tree_range_start = 0;
+            tree_range_end = tree_size - 1;
+        }
+
         segment_tree.resize(tree_size * 2, Segment{});
     }
 
-    void buildTree(int array_size, const vector<int> &initial_array)
+    template <typename value_type = int>
+    void buildTree(int array_size, const vector<value_type> &initial_array = vector<value_type>{})
     {
+        if (initial_array.empty())
+        {
+            return;
+        }
+
         for (int i = 0; i < array_size; ++i)
         {
-            segment_tree[tree_size + i] = Segment(initial_array[i]);
+            int index = i + (int)one_indexing_mode;
+            segment_tree[tree_size + i] = Segment(initial_array[index]);
         }
 
         for (int node = tree_size - 1; node > 0; --node)
@@ -83,12 +105,9 @@ private:
 
 public:
     SegmentTree() {}
-    SegmentTree(int array_size)
-    {
-        this->initialize(array_size);
-    }
 
-    SegmentTree(int array_size, const vector<int> &initial_array)
+    template <typename value_type = int>
+    SegmentTree(int array_size, const vector<value_type> &initial_array = vector<value_type>{})
     {
         this->initialize(array_size);
         this->buildTree(array_size, initial_array);
@@ -96,12 +115,12 @@ public:
 
     void updateTree(int index, int value)
     {
-        updateTree(index, value, 1, 0, tree_size - 1);
+        updateTree(index, value, 1, tree_range_start, tree_range_end);
     }
 
     Segment queryRange(int left_bound, int right_bound)
     {
-        return queryRange(left_bound, right_bound, 1, 0, tree_size - 1);
+        return queryRange(left_bound, right_bound, 1, tree_range_start, tree_range_end);
     }
 };
 
@@ -116,7 +135,7 @@ int main()
         cin >> initial_array[i];
     }
 
-    SegmentTree segment_tree(array_size, initial_array);
+    SegmentTree<false> segment_tree(array_size, initial_array);
     for (int i = 0; i < queries; ++i)
     {
         string operation;
@@ -131,7 +150,7 @@ int main()
         {
             int left_bound, right_bound;
             cin >> left_bound >> right_bound;
-            cout << segment_tree.queryRange(left_bound, right_bound).sum << "\n";
+            cout << segment_tree.queryRange(left_bound, right_bound).maximum << "\n";
         }
         else
         {
